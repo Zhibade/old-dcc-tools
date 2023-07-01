@@ -1,0 +1,170 @@
+global proc ExecuteRot() {
+    float $minrX = `floatSliderGrp -q -v minRotXSld`;
+    float $minrY = `floatSliderGrp -q -v minRotYSld`;
+    float $minrZ = `floatSliderGrp -q -v minRotZSld`;
+    float $maxrX = `floatSliderGrp -q -v maxRotXSld`;
+    float $maxrY = `floatSliderGrp -q -v maxRotYSld`;
+    float $maxrZ = `floatSliderGrp -q -v maxRotZSld`;
+    
+    float $minsX = `floatSliderGrp -q -v minScaleXSld`;
+    float $minsY = `floatSliderGrp -q -v minScaleYSld`;
+    float $minsZ = `floatSliderGrp -q -v minScaleZSld`;
+    float $maxsX = `floatSliderGrp -q -v maxScaleXSld`;
+    float $maxsY = `floatSliderGrp -q -v maxScaleYSld`;
+    float $maxsZ = `floatSliderGrp -q -v maxScaleZSld`;
+    
+    float $mins = `floatSliderGrp -q -v minScaleSld`;
+    float $maxs = `floatSliderGrp -q -v maxScaleSld`;
+    
+    $chk = `checkBox -q -v globalScaleChk`;
+    
+    $sel = `ls -sl`;
+    
+    $sSize = size($sel);
+    
+    if ($sSize < 1) {
+        confirmDialog -title "Warning" -m "No objects selected";
+    }
+    
+    for ($x in $sel) {
+        float $rrotX = rand($minrX, $maxrX);
+        float $rrotY = rand($minrY, $maxrY);
+        float $rrotZ = rand($minrZ, $maxrZ);
+        float $rsX = rand($minsX, $maxsX);
+        float $rsY = rand($minsY, $maxsY); 
+        float $rsZ = rand($minsZ, $maxsZ);
+        float $rs = rand($mins, $maxs);
+        
+        select -r $x;
+        rotate -os -r $rrotX $rrotY $rrotZ;
+        
+        if ($chk) {
+            scale -r $rs $rs $rs;     
+        } else {
+            scale -r $rsX $rsY $rsZ;
+        }       
+    }
+}
+
+global proc ChkGlobal() {
+    $sldt = `checkBox -q -v globalScaleChk`;
+    
+    if ($sldt) {
+        floatSliderGrp -e -en true minScaleSld;
+        floatSliderGrp -e -en true maxScaleSld;
+        
+        floatSliderGrp -e -en false minScaleXSld;
+        floatSliderGrp -e -en false minScaleYSld;
+        floatSliderGrp -e -en false minScaleZSld;
+        floatSliderGrp -e -en false maxScaleXSld;
+        floatSliderGrp -e -en false maxScaleYSld;
+        floatSliderGrp -e -en false maxScaleZSld;
+    } else {
+        floatSliderGrp -e -en false minScaleSld;
+        floatSliderGrp -e -en false maxScaleSld;
+        
+        floatSliderGrp -e -en true minScaleXSld;
+        floatSliderGrp -e -en true minScaleYSld;
+        floatSliderGrp -e -en true minScaleZSld;
+        floatSliderGrp -e -en true maxScaleXSld;
+        floatSliderGrp -e -en true maxScaleYSld;
+        floatSliderGrp -e -en true maxScaleZSld;
+    }
+}
+
+global proc RandRotScale() {
+    
+    $SldX = 5;
+    $SldY = 20;
+    
+    if (`window -exists RandRS`) {
+        deleteUI -window RandRS;
+    }
+    
+    window -title "Random Rotate & Scale" -width 350 -height 250 -sizeable false RandRS;
+    string $winLayout = `formLayout`;
+    
+        text -label "Axis values" txt1;
+        text -label "Global Scale" txt2;
+        
+        floatSliderGrp -label "Min Rotation X" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 0 -cw 1 70 -cw 2 40 -cw 3 50 minRotXSld;
+        floatSliderGrp -label "Min Rotation Y" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 0 -cw 1 70 -cw 2 40 -cw 3 50 minRotYSld;
+        floatSliderGrp -label "Min Rotation Z" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 0 -cw 1 70 -cw 2 40 -cw 3 50 minRotZSld;
+        floatSliderGrp -label "Max Rotation X" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 360 -cw 1 80 -cw 2 40 -cw 3 50 maxRotXSld;
+        floatSliderGrp -label "Max Rotation Y" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 360 -cw 1 80 -cw 2 40 -cw 3 50 maxRotYSld;
+        floatSliderGrp -label "Max Rotation Z" -field true -fieldMinValue 0 -fieldMaxValue 360 -minValue 0 -maxValue 360 -value 360 -cw 1 80 -cw 2 40 -cw 3 50 maxRotZSld;
+        
+        floatSliderGrp -label "Min Scale X" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 minScaleXSld;
+        floatSliderGrp -label "Min Scale Y" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 minScaleYSld;
+        floatSliderGrp -label "Min Scale Z" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 minScaleZSld;
+        floatSliderGrp -label "Max Scale X" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 maxScaleXSld;
+        floatSliderGrp -label "Max Scale Y" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 maxScaleYSld;
+        floatSliderGrp -label "Max Scale Z" -field true -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 60 -cw 2 40 -cw 3 50 maxScaleZSld;
+        
+        floatSliderGrp -label "Min Scale" -field true -en false -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 50 -cw 2 40 -cw 3 50 minScaleSld;
+        floatSliderGrp -label "Max Scale" -field true -en false -fieldMinValue 0.01 -fieldMaxValue 100 -minValue 0.01 -maxValue 100 -value 1 -cw 1 50 -cw 2 40 -cw 3 50 maxScaleSld;
+        
+        checkBox -label "Use global scale" -onCommand "ChkGlobal" -offCommand "ChkGlobal" globalScaleChk;
+        
+        button -label "Start" -width 120 -command "ExecuteRot" startBtn;
+        
+    formLayout -edit
+        -attachForm txt1 "left" 5
+        -attachForm txt1 "top" 5
+        
+        -attachForm txt2 "left" 5
+        -attachForm txt2 "top" 155
+        
+        -attachForm minRotXSld "left" $SldX
+        -attachForm minRotXSld "top" $SldY
+        
+        -attachForm minRotYSld "left" $SldX
+        -attachForm minRotYSld "top" ($SldY + 22)
+        
+        -attachForm minRotZSld "left" $SldX
+        -attachForm minRotZSld "top" ($SldY + 44)
+        
+        -attachForm maxRotXSld "left" ($SldX + 165)
+        -attachForm maxRotXSld "top" $SldY
+        
+        -attachForm maxRotYSld "left" ($SldX + 165)
+        -attachForm maxRotYSld "top" ($SldY + 22)
+        
+        -attachForm maxRotZSld "left" ($SldX + 165)
+        -attachForm maxRotZSld "top" ($SldY + 44)
+        
+        -attachForm minScaleXSld "left" ($SldX + 10)
+        -attachForm minScaleXSld "top" ($SldY + 66)
+        
+        -attachForm minScaleYSld "left" ($SldX + 10)
+        -attachForm minScaleYSld "top" ($SldY + 88)
+        
+        -attachForm minScaleZSld "left" ($SldX + 10)
+        -attachForm minScaleZSld "top" ($SldY + 110)
+        
+        -attachForm maxScaleXSld "left" ($SldX + 185)
+        -attachForm maxScaleXSld "top" ($SldY + 66)
+        
+        -attachForm maxScaleYSld "left" ($SldX + 185)
+        -attachForm maxScaleYSld "top" ($SldY + 88)
+        
+        -attachForm maxScaleZSld "left" ($SldX + 185)
+        -attachForm maxScaleZSld "top" ($SldY + 110)
+        
+        -attachForm minScaleSld "left" ($SldX + 20)
+        -attachForm minScaleSld "top" ($SldY + 150)
+        
+        -attachForm maxScaleSld "left" ($SldX + 195)
+        -attachForm maxScaleSld "top" ($SldY + 150)
+        
+        -attachForm globalScaleChk "left" 130
+        -attachForm globalScaleChk "top" 200
+        
+        -attachForm startBtn "left" 120
+        -attachForm startBtn "top" 225
+        
+    $winLayout;
+    showWindow RandRS;
+}
+
+RandRotScale();

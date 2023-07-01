@@ -1,0 +1,127 @@
+global proc TextValueChange(string $txtfield) {
+    $text = `textField -query -value $txtfield`;
+}
+
+global proc CheckboxChange() {
+    $chkv = `checkBox -q -v preSuffChk`;
+    
+    if ($chkv) {
+        textField -edit -en false nameTxtFld;
+    } else {
+        textField -edit -en true nameTxtFld;
+    }
+}
+
+global proc RenameObjs() {
+    $chkv = `checkBox -q -v preSuffChk`;
+    $pre = `textField -q -tx prefTxtFld`;
+    $suf = `textField -q -tx suffTxtFild`;  
+    $nam = `textField -q -tx nameTxtFld`;
+    
+    $x = `ls -sl`;
+    $y = size($x);
+    
+    $count = 0;
+    
+    for ($o in $x) {
+        if ($chkv) {
+            rename $o ($pre + $o + $suf);
+        } else {
+            rename $o ($pre + $nam + "0" + (string)$count + $suf);
+            $count = $count + 1;
+        }
+    }
+    
+    UpdateList();
+}
+
+global proc UpdateList() {
+    
+    $x = `ls -sl`;
+    $y = size($x);
+    
+    textScrollList -edit -ra txtScroll;
+    
+    for ($o in $x) {
+        textScrollList -edit -width 153 -height 300 -a $o txtScroll;
+    }
+        
+    if ($y < 1) {
+        textScrollList -edit -width 153 -height 300 -a "No objects selected" txtScroll;
+    }
+}
+
+global proc ObjectRenamer() {
+    if (`window -exists ObjRename`) {
+       deleteUI -window ObjRename;
+    }
+    
+    window -title "Object Renamer" -width 313 -height 350 ObjRename;
+    
+    $objSel = `ls -sl`;
+    $numSel = size($objSel);
+    
+    string $winLayout = `formLayout -numberOfDivisions 313`;
+        string $objectsLabel = `text -label "Objects"`;
+        
+        string $prefLabel = `text -label "Prefix"`;
+        textField -width 122 -text "P_" -enterCommand "setFocus prefTxtFld" prefTxtFld;
+            
+        string $suffLabel = `text -label "Suffix"`;
+        textField -width 122 -text "_S" -enterCommand "setFocus suffTxtFild" suffTxtFild;
+            
+        string $nameLabel = `text -label "Name"`;
+        textField -width 122 -text "Name" -enterCommand "setFocus nameTxtFld" nameTxtFld;
+        
+        textScrollList txtScroll;
+        checkBox -label "Add Prefix/Suffix only"
+                          -onCommand "CheckboxChange"
+                          -offCommand "CheckboxChange"
+                          preSuffChk;
+        
+        string $renameBtn = `button -label "Rename selected" -command "RenameObjs"`;
+        string $updateBtn = `button -label "Update list" -command "UpdateList"`;
+        
+        
+        UpdateList();
+        
+    formLayout -edit
+        -attachForm $objectsLabel "left" 140
+        -attachForm $objectsLabel "top" 6
+        
+        -attachForm $prefLabel "left" 4
+        -attachForm $prefLabel "top" 6
+        
+        -attachForm $suffLabel "left" 4
+        -attachForm $suffLabel "top" 61
+        
+        -attachForm $nameLabel "left" 4
+        -attachForm $nameLabel "top" 118
+        
+        -attachForm preSuffChk "left" 10
+        -attachForm preSuffChk "top" 181
+        
+        -attachForm $renameBtn "left" 7
+        -attachForm $renameBtn "top" 214
+        
+        -attachForm $updateBtn "left" 7
+        -attachForm $updateBtn "top" 260
+        
+        -attachForm prefTxtFld "left" 7
+        -attachForm prefTxtFld "top" 25
+        
+        -attachForm suffTxtFild "left" 7
+        -attachForm suffTxtFild "top" 81
+        
+        -attachForm nameTxtFld "left" 7
+        -attachForm nameTxtFld "top" 136
+        
+        -attachForm txtScroll "left" 148
+        -attachForm txtScroll "top" 27
+    
+    $winLayout;
+    
+    showWindow ObjRename;
+}
+
+ObjectRenamer();

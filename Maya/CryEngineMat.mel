@@ -1,0 +1,271 @@
+global int $maxMats = 30;
+global string $matsTxt[];
+global string $matsFld[];
+global string $matsChk[];
+global int $chkV[];
+global string $ddl[];
+global int $subIDs;
+global string $matsDrop[];
+global string $matsName[];
+global int $currentPhase;
+global int $toolUsed;
+
+global proc CreateMats() {
+    global string $matsFld[];
+    global string $matsName[];
+    global string $matsChk[];
+    global string $matsDrop[];
+    global int $chkV[];
+    global string $ddl[];
+    global int $subIDs;
+    global int $currentPhase;
+    global int $toolUsed;
+    
+    $subIDs = `intSliderGrp -q -v subIdsSld`; 
+    
+    for ($x = 0; $x<$subIDs; $x++) {
+        float $rcol1 = rand(0, 1);
+        float $rcol2 = rand(0, 1);
+        float $rcol3 = rand(0, 1);
+        
+        $matsName[$x] = `textField -q -tx $matsFld[$x]`;
+        $chkV[$x] = `checkBox -q -v $matsChk[$x]`;
+        $ddl[$x] = `optionMenu -q -v $matsDrop[$x]`;
+        
+        if (`objExists $matsName[$x]`) {
+            delete $matsName[$x];
+            delete ($matsName[$x] + "SG");
+        }
+        
+        $shader = `shadingNode -asShader blinn -name $matsName[$x]`;
+        $shaderSG = `sets -renderable true -noSurfaceShader true -empty -name ($matsName[$x] + "SG")`;
+        connectAttr -f ($shader +".outColor") ($shaderSG + ".surfaceShader");
+        setAttr ($shader + ".color") -type double3 $rcol1 $rcol2 $rcol3;
+    }
+    
+    button -e -en false createMatsBtn;
+    button -e -en true collisionSettingsBtn;
+    button -e -en true deleteMatsBtn;
+    intSliderGrp -e -en false subIdsSld;
+    $currentPhase = 1;
+    $toolUsed = 1;
+}
+
+global proc AdjustMats() {
+    
+    global string $matsName[];
+    global string $matsChk[];
+    global string $matsDrop[];
+    global string $ddl[];
+    global int $chkV[];
+    global int $currentPhase;
+    global int $subIDs;
+    
+    for ($x = 0; $x<$subIDs; $x++) {
+        
+        if (`attributeQuery -node $matsName[$x] -exists "physicalise"`) {
+           if ($chkV[$x]) {
+               if ($ddl[$x] == "Default") {
+                   setAttr ($matsName[$x] + ".physicalise") 1;
+               }
+               if ($ddl[$x] == "Proxy") {
+                   setAttr ($matsName[$x] + ".physicalise") 2;
+               }
+               
+               button -e -en true createMatsBtn;
+               button -e -en false collisionSettingsBtn;
+               intSliderGrp -e -en true subIdsSld;
+               $currentPhase = 0;
+               
+           } else {
+              setAttr ($matsName[$x] + ".physicalise") 0; 
+           }
+        } else {
+           confirmDialog -title "Warning" -m "Add attributes using Crytek's Export Plugin first";
+           break; 
+        }
+    }
+    
+}
+
+global proc CleanMats() {
+    global int $maxMats;
+    global string $matsName[];
+    global int $currentPhase;
+       
+    for ($x = 0; $x<$maxMats; $x++) {
+        if (`objExists $matsName[$x]`) {
+            delete $matsName[$x];
+            delete ($matsName[$x] + "SG");
+        }
+    }
+    
+    button -e -en true createMatsBtn;
+    button -e -en false collisionSettingsBtn;
+    button -e -en false deleteMatsBtn;
+    intSliderGrp -e -en true subIdsSld;
+    
+    $currentPhase = 0;
+}
+
+global proc UpdateUI() {
+    global int $maxMats;
+    global string $matsTxt[];
+    global string $matsFld[];
+    global string $matsChk[];
+    global string $matsDrop[];
+    global int $currentPhase;
+    global int $subIDs;
+    
+    $subIDs = `intSliderGrp -q -v subIdsSld`;
+        
+    for ($x = 0; $x<$subIDs; $x++) {
+        textField -edit -en true $matsFld[$x];
+        checkBox -edit -en true $matsChk[$x];  
+        optionMenu -e -en true $matsDrop[$x];
+    }
+    
+    for ($x = $subIDs; $x<$maxMats; $x++) {
+        textField -edit -en false $matsFld[$x];
+        checkBox -edit -en false $matsChk[$x];
+        optionMenu -e -en false $matsDrop[$x];  
+    }
+    
+    if ($currentPhase == 1) {
+        button -e -en false createMatsBtn;
+        button -e -en true collisionSettingsBtn;
+        button -e -en true deleteMatsBtn;
+        intSliderGrp -e -en false subIdsSld;
+    }
+    
+    CheckCollision();
+}
+
+global proc CheckCollision() {
+    
+    global int $maxMats;
+    global string $matsTxt[];
+    global string $matsFld[];
+    global string $matsChk[];
+    global string $matsDrop[];
+    global int $subIDs;
+    global int $chkV[];
+    
+    for ($x = 0; $x<$maxMats; $x++) {
+        
+        $chkV[$x] = `checkBox -q -v $matsChk[$x]`;
+        $ddl[$x] = `optionMenu -q -v $matsDrop[$x]`;
+        
+        if ($chkV[$x] && $x < $subIDs) {
+            optionMenu -edit -en true $matsDrop[$x];
+        } else {
+            optionMenu -edit -en false $matsDrop[$x];
+        }
+    }
+}
+
+global proc CryEngineMat() {
+    
+    global int $maxMats;
+    global string $matsTxt[];
+    global string $matsFld[];
+    global string $matsChk[];
+    global string $matsDrop[];
+    global string $matsName[];
+    global int $chkV[];
+    global string $ddl[];
+    global int $toolUsed;
+    global int $subIDs;
+    
+    if (`window -exists CryWin`) {
+        deleteUI -window CryWin; 
+    }
+    
+    window -title "CryEngine Fast Material" -w 330 -h 700 -sizeable true CryWin;
+    
+    string $scroll = `scrollLayout`;
+    string $winLayout = `formLayout`;
+
+        text -label "Material List" txt1;
+        text -label "1:" txt2;
+        text -label "2: Add attributes using \n Crytek's Export Plugin" txt3;
+        text -label "3:" txt4;
+        intSliderGrp -label "SubIDs" -field true -fieldMinValue 1 -fieldMaxValue $maxMats -minValue 1 -maxValue $maxMats -value 1 -cw 1 40 -cw 2 40 -cw 3 40 -cc "UpdateUI" -dc "UpdateUI" subIdsSld;
+        button -label "Create Materials" -command "CreateMats" createMatsBtn;
+        button -label "Apply collision settings" -command "AdjustMats" -en false collisionSettingsBtn;
+        button -label "Delete materials" -command "CleanMats" -en false deleteMatsBtn;
+        
+        
+        string $column = `rowColumnLayout -numberOfColumns 2 -cw 1 30 -cal 1 "left" -cal 2 "left"`;
+    
+        for ($x = 0; $x<$maxMats;$x++) {
+            if ($toolUsed == 1) {
+                string $num = $x;
+                $matsTxt[$x] = `text -label "Name"`;
+                $matsFld[$x] = `textField -width 120 -text $matsName[$x]`;
+                
+                if ($chkV[$x]) {
+                    $matsChk[$x] = `checkBox -label " " -onCommand "CheckCollision" -offCommand "CheckCollision" -v true`;
+                } else {
+                    $matsChk[$x] = `checkBox -label " " -onCommand "CheckCollision" -offCommand "CheckCollision"`;
+                }
+               
+                $matsDrop[$x] = `optionMenu -label "Collision" -en false`;
+                    menuItem -label "Default";
+                    menuItem -label "Proxy";
+                    
+                if ($ddl[$x] == "Proxy") {
+                    optionMenu -e -v "Proxy" $matsDrop[$x];
+                }
+                
+                intSliderGrp -e -value $subIDs subIdsSld;
+                button -e -en true deleteMatsBtn;
+                
+            } else {
+                string $num = $x;
+                $matsTxt[$x] = `text -label "Name"`;
+                $matsFld[$x] = `textField -width 120 -text ("Mat" + $num)`;
+                $matsChk[$x] = `checkBox -label " " -onCommand "CheckCollision" -offCommand "CheckCollision"`;
+                $matsDrop[$x] = `optionMenu -label "Collision" -en false`;
+                    menuItem -label "Default";
+                    menuItem -label "Proxy";
+            }
+        }
+        
+    formLayout -edit
+        -attachForm txt1 "left" 10
+        -attachForm txt1 "top" 6
+        
+        -attachForm subIdsSld "left" 165
+        -attachForm subIdsSld "top" 13
+        
+        -attachForm createMatsBtn "left" 189
+        -attachForm createMatsBtn "top" 50
+        
+        -attachForm collisionSettingsBtn "left" 189
+        -attachForm collisionSettingsBtn "top" 105
+        
+        -attachForm deleteMatsBtn "left" 189
+        -attachForm deleteMatsBtn "top" 155
+        
+        -attachForm txt2 "left" 179
+        -attachForm txt2 "top" 55
+        
+        -attachForm txt3 "left" 179
+        -attachForm txt3 "top" 75
+        
+        -attachForm txt4 "left" 179
+        -attachForm txt4 "top" 110
+        
+        -attachForm $column "left" 10
+        -attachForm $column "top" 19
+        
+    $winLayout;
+    
+    UpdateUI();
+    window -e -width 335 -height 425 -sizeable false CryWin;
+    showWindow CryWin;
+    
+}
+
+CryEngineMat();
