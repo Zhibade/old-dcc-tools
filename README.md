@@ -2,19 +2,20 @@
 Tools/scripts that I made a long time ago for Maya, 3ds Max, and Photoshop.
 
 ## Maya
-**CacheToBlendshapeAnim:** Copies simulated mesh frames (or other blendshapes) to a single blendshape node as intermediate blendshapes so that simulation can be played in the game engine at runtime\
-**VtxAOtoRGBTool:** Tool for inverting each RGBA channel of vertex colors or removing data. Was mostly used to move baked vertex AO to a single channel\
-**CryEngineMat:** Tool for setting up materials and collison settings for export to CryEngine\
-**ObjectRenamer:** Tool for renaming objects and/or adding prefix & suffix\
-**RandRotScale:** Tool for randomizing the rotation and scale of the selected objects\
+### CacheToBlendshapeAnim
+**CacheToBlendshapeAnim:** Copies simulated mesh frames (or other blendshapes) to a single blendshape node as intermediate blendshapes so that simulation can be played in the game engine at runtime.\
+**VtxAOtoRGBTool:** Tool for inverting each RGBA channel of vertex colors or removing data. Was mostly used to move baked vertex AO to a single channel.\
+**CryEngineMat:** Tool for setting up materials and collison settings for export to CryEngine.\
+**ObjectRenamer:** Tool for renaming objects and/or adding prefix & suffix.\
+**RandRotScale:** Tool for randomizing the rotation and scale of the selected objects.
 
 ## 3ds Max
-**CryEngineAutoMat:** Tool for setting up materials and collison settings for export to CryEngine\
-**ObjectRenamer:** Tool for renaming objects and/or adding prefix & suffix\
-**RandRotScale:** Tool for randomizing the rotation and scale of the selected objects\
+**CryEngineAutoMat:** Tool for setting up materials and collison settings for export to CryEngine.\
+**ObjectRenamer:** Tool for renaming objects and/or adding prefix & suffix.\
+**RandRotScale:** Tool for randomizing the rotation and scale of the selected objects.
 
 ## Photoshop
-**LightmapMergingTool:** Used for merging many .exr files into a single file including the alpha channel. Was mostly used for merging multiple lightmaps into one for use in Unity.\
+**LightmapMergingTool:** Used for merging many .exr files into a single file including the alpha channel. Was mostly used for merging multiple lightmaps into one for use in Unity.
 
 
 # How to use
